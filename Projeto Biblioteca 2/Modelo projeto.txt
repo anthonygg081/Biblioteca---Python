@@ -1,0 +1,154 @@
+import datetime
+
+# ------------------------
+# Dados iniciais
+# ------------------------
+
+usuarios = {}
+
+livros = {
+    1: {"titulo": "Dom Casmurro", "autor": "Machado de Assis", "disponivel": True},
+    2: {"titulo": "1984", "autor": "George Orwell", "disponivel": True},
+    3: {"titulo": "O Pequeno Príncipe", "autor": "Antoine de Saint-Exupéry", "disponivel": True},
+    4: {"titulo": "Senhor dos Anéis", "autor": "J.R.R. Tolkien", "disponivel": True},
+}
+
+VALOR_MULTA_DIA = 2  # R$ 2 por dia de atraso
+DIAS_LIMITE = 7      # 7 dias sem multa
+
+
+# ------------------------
+# Funções
+# ------------------------
+
+def cadastrar():
+    print("\n--- Cadastro ---")
+    usuario = input("Digite um nome de usuário: ")
+    senha = input("Digite uma senha: ")
+
+    if usuario in usuarios:
+        print("Usuário já existe!")
+    else:
+        usuarios[usuario] = {
+            "senha": senha,
+            "livros_emprestados": {}
+        }
+        print("Cadastro realizado com sucesso!")
+
+
+def login():
+    print("\n--- Login ---")
+    usuario = input("Usuário: ")
+    senha = input("Senha: ")
+
+    if usuario in usuarios and usuarios[usuario]["senha"] == senha:
+        print("Login realizado com sucesso!")
+        menu_usuario(usuario)
+    else:
+        print("Usuário ou senha incorretos.")
+
+
+def listar_livros():
+    print("\n--- Lista de Livros ---")
+    for codigo, livro in livros.items():
+        status = "Disponível" if livro["disponivel"] else "Emprestado"
+        print(f"{codigo} - {livro['titulo']} ({livro['autor']}) - {status}")
+
+
+def pegar_livro(usuario):
+    listar_livros()
+    try:
+        codigo = int(input("Digite o código do livro que deseja pegar: "))
+        if codigo in livros and livros[codigo]["disponivel"]:
+            livros[codigo]["disponivel"] = False
+            data_emprestimo = datetime.date.today()
+            usuarios[usuario]["livros_emprestados"][codigo] = data_emprestimo
+            print("Livro emprestado com sucesso!")
+        else:
+            print("Livro indisponível ou inexistente.")
+    except:
+        print("Entrada inválida.")
+
+
+def devolver_livro(usuario):
+    emprestados = usuarios[usuario]["livros_emprestados"]
+
+    if not emprestados:
+        print("Você não tem livros emprestados.")
+        return
+
+    print("\n--- Seus Livros ---")
+    for codigo in emprestados:
+        print(f"{codigo} - {livros[codigo]['titulo']}")
+
+    try:
+        codigo = int(input("Digite o código do livro que deseja devolver: "))
+
+        if codigo in emprestados:
+            data_emprestimo = emprestados[codigo]
+            data_devolucao = datetime.date.today()
+            dias = (data_devolucao - data_emprestimo).days
+
+            multa = 0
+            if dias > DIAS_LIMITE:
+                multa = (dias - DIAS_LIMITE) * VALOR_MULTA_DIA
+
+            livros[codigo]["disponivel"] = True
+            del emprestados[codigo]
+
+            print(f"Livro devolvido com sucesso!")
+            print(f"Dias com o livro: {dias}")
+            print(f"Valor a pagar: R$ {multa}")
+        else:
+            print("Você não possui esse livro.")
+    except:
+        print("Entrada inválida.")
+
+
+def menu_usuario(usuario):
+    while True:
+        print(f"\n--- Menu do Usuário ({usuario}) ---")
+        print("1 - Ver livros")
+        print("2 - Pegar livro")
+        print("3 - Devolver livro")
+        print("4 - Sair")
+
+        opcao = input("Escolha uma opção: ")
+
+        if opcao == "1":
+            listar_livros()
+        elif opcao == "2":
+            pegar_livro(usuario)
+        elif opcao == "3":
+            devolver_livro(usuario)
+        elif opcao == "4":
+            break
+        else:
+            print("Opção inválida.")
+
+
+def menu_principal():
+    while True:
+        print("\n=== LIVRARIA ===")
+        print("1 - Cadastrar")
+        print("2 - Login")
+        print("3 - Sair")
+
+        opcao = input("Escolha uma opção: ")
+
+        if opcao == "1":
+            cadastrar()
+        elif opcao == "2":
+            login()
+        elif opcao == "3":
+            print("Encerrando sistema...")
+            break
+        else:
+            print("Opção inválida.")
+
+
+# ------------------------
+# Início do programa
+# ------------------------
+
+menu_principal()
