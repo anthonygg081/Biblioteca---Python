@@ -1,0 +1,1 @@
+Mini projeto simples de um biblioteca em Python com algumas funções básicas (CRUD) que estou fazendo no 3° período de CC, explorando e aprendendo manipulação de dicionários e ampliando meus fundamentos em lógica de programação e conhecimentos na linguagem.
