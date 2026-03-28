@@ -15,30 +15,33 @@ def cadastrar():
     senha = input("Digite a senha: ")
 
     if usuario in usuarios:
-        print('Usuário já cadastrado.')
+        print('\nUsuário já cadastrado.')
         return
     else:
         usuarios[usuario] = {
             "senha" : senha,
             "livros_emprestados" : {}
+## estrutra de usuarios:
+## usuarios = {
+##     "usuario1": { "senha": "123", "livros_emprestados": {livros} }
         }
-    print("Cadastro Realizado!")
+    print("\nCadastro Realizado!")
 
 
 def login():
-    print("--- LOGIN ---")
+    print("\n--- LOGIN ---")
     usuario = input("Digite o nome de Usuário: ")
     senha = input("Digite a senha: ")
 
     if usuario in usuarios and usuarios[usuario]["senha"] == senha:
+        print("\nLogin Realizado!")
         menu_usuario(usuario)
-        print("Login Realizado!")
     else:
-        print("Usuário não encontrado.")
+        print("\nUsuário não encontrado.")
 
 
 def listar_livros():
-    print("\n--- Seus Livros ---")
+    print("\n--- Livros ---")
 #   pega o id ,  o items() junta as informações da chave
     for codigo, livro in livros.items():
         # Se a "situação" do livro for verdadeira (disponível), armazena "Disponível". Se for falsa, armazena "Emprestado".
@@ -48,54 +51,65 @@ def listar_livros():
 
 def pegar_livro(usuario):
     listar_livros()
-    codigo = input("Digite o código do livro que deseja: ")
+    codigo = int(input("\nDigite o código do livro que deseja: "))
 
-    if codigo in livros and livros[codigo]['situação'] == True:
+    if codigo in livros and livros[codigo]['situação']:
         livros[codigo]["situação"] = False
         data_emprestimo = datetime.date.today()
 
         usuarios[usuario]["livros_emprestados"][codigo] = data_emprestimo
-        print("Livro emprestado!")
+        print("\nLivro emprestado!")
     else:
-        print("Livro não encontrado ou indisponível.")
+        print("\nLivro não encontrado ou indisponível.")
 
+
+import datetime
 
 def devolver_livro(usuario):
     emprestados = usuarios[usuario]["livros_emprestados"]
-    VALOR_MULTA_DIA = 2  # R$ 2 por dia de atraso
-    DIAS_LIMITE = 7      # 7 dias sem multa
+    VALOR_MULTA_DIA = 2 
+    DIAS_LIMITE = 7      
 
-    if emprestados:
-      for codigo, livro in emprestados:
-          print(f"{codigo} - {livro["nome"]} ")
+    if not emprestados:
+        print("\nVocê não possui livros emprestados.")
+        return
 
-          codigo = input("Digite o código do livro que deseja devolver: ")
+    print("\n--- Seus Livros Emprestados ---")
+    for codigo, data_emprestimo in emprestados.items():
+        print(f"Código: {codigo} - Data do Empréstimo: {data_emprestimo}")
 
-          if codigo in emprestados:
-              data_emprestimo = emprestados[codigo]
-              data_devolucao = datetime.date.today()
-              dias = (data_devolucao - data_emprestimo).days
+    try:
+        codigo = int(input("\nDigite o código do livro: "))
+        
+        if codigo in emprestados:
+            # Aqui 'emprestados[codigo]' já é a data diretamente
+            data_do_emprestimo = emprestados[codigo] 
+            data_devolucao = datetime.date.today()
+            dias = (data_devolucao - data_do_emprestimo).days
+            
+            # ... resto do código de multa ...
+            multa = 0
+            if dias > DIAS_LIMITE:
+                multa = (dias - DIAS_LIMITE) * VALOR_MULTA_DIA
+            
+            # Atualiza o status geral dos livros e remove do usuário
+            livros[codigo]["situação"] = True
+            del emprestados[codigo]
 
-              multa = 0
-              if dias > DIAS_LIMITE:
-                  multa = (dias - DIAS_LIMITE) * VALOR_MULTA_DIA
-
-                  livros[codigo]["situação"] = True
-                  del emprestados[codigo]
-
-                  print("Livro devolvido.")
-                  print(f"Dias com o livro: {dias}")
-                  print(f"Valor a pagar R${multa}")
-
-              else:
-                  print("Você não possui esse livro.")
-
-
+            print(f"\nSucesso! Livro devolvido.")
+            print(f"Dias com o livro: {dias}")
+            if multa > 0:
+                print(f"Valor da multa: R${multa}")
+        else:
+            print("\nCódigo não encontrado na sua lista de empréstimos.")
+            
+    except ValueError:
+        print("\nPor favor, digite um número válido para o código.")
 
 def menu_principal():
     while True:
         print("\n=== BIBLIOTECA ===")
-        print("1 - Cadastrar\n2 - Login\n 3 - Sair")
+        print("1 - Cadastrar\n2 - Login\n3 - Sair")
 
         escolha = input("Escolha uma opção: ")
 
@@ -112,7 +126,7 @@ def menu_principal():
 def menu_usuario(usuario):
     while True:
         print(f"\n--- Menu Usuário ({usuario}) ---")
-        print("1 - Listar livros\n2 - Pegar livro\n 3 - Devolver livro\n 4 - Sair")
+        print("1 - Listar livros\n2 - Pegar livro\n3 - Devolver livro\n4 - Sair")
 
         escolha = input("Escolha uma opção: ")
 
